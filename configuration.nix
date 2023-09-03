@@ -12,6 +12,7 @@ let
       "JetBrainsMono"
     ];
   };
+  unstableTarball = fetchTarball https://github.com/NixOS/nixpkgs/archive/aa8aa7e2ea35ce655297e8322dc82bf77a31d04b.tar.gz;
 in
 {
   imports =
@@ -79,11 +80,14 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+  # docker
+  virtualisation.docker.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.${user} = {
     isNormalUser = true;
     description = "Krisztian";
-    extraGroups = [ "networkmanager" "wheel" ];
+    shell = pkgs.zsh;
+    extraGroups = [ "networkmanager" "wheel" "docker"];
     packages = with pkgs; [
       firefox
       kate
@@ -92,15 +96,24 @@ in
   };
 
   # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    packageOverrides = pkgs: with pkgs; {
+      unstable = import unstableTarball {
+        config = config.nixpkgs.config;
+      };
+    };
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-   wget
-   kitty
-   git
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    wget
+    kitty
+    git
+    unstable.docker_24
+    direnv
   ];
 
   fonts.fonts = with pkgs; [
@@ -125,6 +138,7 @@ in
       theme = "powerlevel10k/powerlevel10k";
     };
   };
+  programs.ssh.startAgent = true;
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.

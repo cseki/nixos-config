@@ -6,8 +6,9 @@ let
   commonPkgs = with pkgs; [
     arandr     # GUI for xrandr
     #dmenu      # application launcher
-    slack
     tree
+    gnumake
+    google-cloud-sdk
   ];
 
   gitPkgs = with pkgs; [
@@ -46,6 +47,9 @@ in
       enable = true;
       plugins = ["git" "fzf"];
     };
+    initExtra = ''
+      [[ ! -f ./.p10k.zsh ]] || source ./.p10k.zsh
+    '';
     plugins = [
       {
         name = "powerlevel10k";
